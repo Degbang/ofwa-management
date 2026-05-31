@@ -1,10 +1,12 @@
 import { Role } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { readStoredFile } from "@/lib/services/storage";
 import { requireApiSession } from "@/lib/session";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function GET(_: Request, { params }: { params: { attachmentId: string } }) {
+  const [{ prisma }, { readStoredFile }] = await Promise.all([import("@/lib/db"), import("@/lib/services/storage")]);
   const user = await requireApiSession();
   if (!user) {
     return new NextResponse("Unauthorized", { status: 401 });
