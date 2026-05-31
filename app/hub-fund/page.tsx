@@ -2,6 +2,8 @@ import Image from "next/image";
 import { createPublicHubFundRequestAction } from "@/lib/actions";
 import { HubFundFields } from "@/components/requests/request-forms";
 
+export const dynamic = "force-dynamic";
+
 export default function PublicHubFundPage() {
   return (
     <div className="page">

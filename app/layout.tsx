@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { ToastListener } from "@/components/toast-listener";
 import { APP_NAME } from "@/lib/constants";
@@ -20,7 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <ToastListener />
+        <Suspense fallback={null}>
+          <ToastListener />
+        </Suspense>
         {children}
       </body>
     </html>

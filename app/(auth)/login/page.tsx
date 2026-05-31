@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { GoogleSignInButton } from "@/components/auth-buttons";
 import { getCurrentSessionUser } from "@/lib/session";
 
+export const dynamic = "force-dynamic";
+
 export default async function LoginPage({ searchParams }: { searchParams?: { error?: string } }) {
   const user = await getCurrentSessionUser();
   if (user) {
