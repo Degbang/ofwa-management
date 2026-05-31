@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
-import { APP_AUTH_EMAIL_COOKIE, APP_SESSION_COOKIE } from "@/lib/auth-session";
-import { DEV_IMPERSONATION_COOKIE } from "@/lib/dev-impersonation";
-import { createClient } from "@/lib/supabase/server";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  const [{ APP_AUTH_EMAIL_COOKIE, APP_SESSION_COOKIE }, { DEV_IMPERSONATION_COOKIE }, { createClient }] = await Promise.all([
+    import("@/lib/auth-session"),
+    import("@/lib/dev-impersonation"),
+    import("@/lib/supabase/server")
+  ]);
   const requestUrl = new URL(request.url);
   const next = requestUrl.searchParams.get("next") ?? "/login";
   const safeNext = next.startsWith("/") ? next : "/login";

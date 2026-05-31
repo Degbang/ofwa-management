@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { APP_AUTH_EMAIL_COOKIE, APP_SESSION_COOKIE, getAppSessionCookieOptions } from "@/lib/auth-session";
-import { ensureConfiguredAppUserByEmail, getApprovedAppUserByEmail } from "@/lib/auth-user";
-import { createClient } from "@/lib/supabase/server";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  const [{ APP_AUTH_EMAIL_COOKIE, APP_SESSION_COOKIE, getAppSessionCookieOptions }, { ensureConfiguredAppUserByEmail, getApprovedAppUserByEmail }, { createClient }] =
+    await Promise.all([import("@/lib/auth-session"), import("@/lib/auth-user"), import("@/lib/supabase/server")]);
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const next = requestUrl.searchParams.get("next") ?? "/dashboard";
