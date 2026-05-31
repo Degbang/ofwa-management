@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { runScheduledAlerts } from "@/lib/services/alerts";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 function isAuthorized(request: Request) {
   const secret = process.env.ALERT_CRON_SECRET;
@@ -18,6 +20,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { runScheduledAlerts } = await import("@/lib/services/alerts");
   const result = await runScheduledAlerts();
   return NextResponse.json({
     ok: true,
