@@ -1,0 +1,289 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STAFF
+  BRIAN
+  JAEL
+  DICKSON
+  EDMOND
+}
+
+enum RequestType {
+  CASH_DISBURSEMENT
+  HUB_FUND
+  REIMBURSEMENT
+  LEAVE
+  GENERAL
+}
+
+enum RequestStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  FORWARDED
+  APPROVED
+  REJECTED
+  PAID
+  CLOSED
+}
+
+enum ApprovalActionType {
+  SUBMITTED
+  FORWARDED
+  APPROVED
+  REJECTED
+  MARKED_PAID
+  CLOSED
+}
+
+enum PaymentStatus {
+  NOT_APPLICABLE
+  PENDING
+  PAID
+}
+
+enum AttachmentEntityType {
+  REQUEST
+  DAMAGE_REPORT
+  RENTAL
+}
+
+enum InventoryCondition {
+  GOOD
+  DAMAGED
+  MISSING
+  UNDER_REPAIR
+}
+
+enum ReportType {
+  DAMAGED
+  MISSING
+}
+
+enum ReportStatus {
+  REPORTED
+  UNDER_REVIEW
+  RESOLVED
+}
+
+enum ReturnStatus {
+  NOT_RETURNED
+  RETURNED
+  RETURNED_DAMAGED
+  MISSING
+}
+
+enum NotificationType {
+  REQUEST_SUBMITTED
+  REQUEST_FORWARDED
+  REQUEST_APPROVED
+  REQUEST_REJECTED
+  FINAL_APPROVAL
+  PAYMENT_MARKED
+  LOW_STOCK
+  RENTAL_OVERDUE
+  DAMAGE_REPORTED
+  RENTAL_DAMAGE
+  RENTAL_MISSING
+}
+
+model User {
+  id                String             @id @default(cuid())
+  name              String?
+  email             String             @unique
+  image             String?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  roleAssignments   RoleAssignment[]
+  requests          Request[]          @relation("Requester")
+  assignedRequests  Request[]          @relation("CurrentApprover")
+  approvalActions   ApprovalAction[]
+  uploadedFiles     Attachment[]
+  reportedIssues    DamageReport[]     @relation("ReportedBy")
+  createdRentals    Rental[]           @relation("CreatedBy")
+  auditLogs         AuditLog[]
+}
+
+model RoleAssignment {
+  id        String   @id @default(cuid())
+  userId    String
+  role      Role
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+}
+
+model Request {
+  id                String            @id @default(cuid())
+  requestId         String            @unique
+  type              RequestType
+  title             String
+  description       String
+  requesterId       String?
+  externalName      String?
+  externalEmail     String?
+  externalPhone     String?
+  amount            Decimal?          @db.Decimal(10, 2)
+  paymentMethod     String?
+  mobileMoneyNumber String?
+  mobileMoneyName   String?
+  status            RequestStatus     @default(DRAFT)
+  paymentStatus     PaymentStatus     @default(NOT_APPLICABLE)
+  currentApproverId String?
+  rejectionReason   String?
+  payload           Json
+  submittedAt       DateTime?
+  approvedAt        DateTime?
+  paidAt            DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  requester         User?             @relation("Requester", fields: [requesterId], references: [id])
+  currentApprover   User?             @relation("CurrentApprover", fields: [currentApproverId], references: [id])
+  attachments       Attachment[]
+  approvals         ApprovalAction[]
+  auditLogs         AuditLog[]
+}
+
+model ApprovalAction {
+  id         String             @id @default(cuid())
+  requestId   String
+  actorId     String
+  role        Role
+  action      ApprovalActionType
+  comment     String?
+  createdAt   DateTime           @default(now())
+  request     Request            @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  actor       User               @relation(fields: [actorId], references: [id])
+}
+
+model Attachment {
+  id          String               @id @default(cuid())
+  entityType  AttachmentEntityType
+  entityId    String
+  requestId   String?
+  damageReportId String?
+  rentalId    String?
+  originalName String
+  storedName  String
+  mimeType    String
+  sizeBytes   Int
+  storagePath String
+  uploadedById String
+  createdAt   DateTime             @default(now())
+  uploadedBy  User                 @relation(fields: [uploadedById], references: [id])
+  request     Request?             @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  damageReport DamageReport?       @relation(fields: [damageReportId], references: [id], onDelete: Cascade)
+  rental      Rental?              @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId])
+}
+
+model Vendor {
+  id              String          @id @default(cuid())
+  vendorId        String          @unique
+  name            String
+  contactPerson   String?
+  phoneNumber     String?
+  email           String?
+  address         String?
+  suppliedItems   String?
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  inventoryItems  InventoryItem[]
+}
+
+model InventoryItem {
+  id                    String             @id @default(cuid())
+  itemId                String             @unique
+  name                  String
+  category              String
+  description           String?
+  quantityInStock       Int
+  minimumStockThreshold Int
+  unitCost              Decimal?           @db.Decimal(10, 2)
+  vendorId              String?
+  location              String?
+  condition             InventoryCondition @default(GOOD)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  vendor                Vendor?            @relation(fields: [vendorId], references: [id])
+  reports               DamageReport[]
+  rentals               Rental[]
+}
+
+model DamageReport {
+  id               String        @id @default(cuid())
+  reportId         String        @unique
+  itemId           String?
+  itemName         String
+  reportType       ReportType
+  reportedById     String
+  description      String
+  dateReported     DateTime
+  status           ReportStatus  @default(REPORTED)
+  resolutionNotes  String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  item             InventoryItem? @relation(fields: [itemId], references: [id])
+  reportedBy       User          @relation("ReportedBy", fields: [reportedById], references: [id])
+  attachments      Attachment[]
+}
+
+model Rental {
+  id                 String       @id @default(cuid())
+  rentalId           String       @unique
+  createdById        String
+  itemId             String
+  renterName         String
+  renterPhone        String
+  renterEmail        String?
+  quantityRented     Int
+  rentalStartDate    DateTime
+  expectedReturnDate DateTime
+  actualReturnDate   DateTime?
+  rentalFee          Decimal?     @db.Decimal(10, 2)
+  depositAmount      Decimal?     @db.Decimal(10, 2)
+  paymentStatus      String
+  returnStatus       ReturnStatus @default(NOT_RETURNED)
+  notes              String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  createdBy          User         @relation("CreatedBy", fields: [createdById], references: [id])
+  item               InventoryItem @relation(fields: [itemId], references: [id])
+  attachments        Attachment[]
+}
+
+model NotificationLog {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  recipient   String
+  subject     String
+  body        String
+  sentAt      DateTime         @default(now())
+  metadata    Json?
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  actorId     String?
+  entityType  String
+  entityId    String
+  requestId   String?
+  action      String
+  details     Json?
+  createdAt   DateTime  @default(now())
+  actor       User?     @relation(fields: [actorId], references: [id])
+  request     Request?  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId])
+}

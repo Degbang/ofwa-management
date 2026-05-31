@@ -1,0 +1,33 @@
+{
+  "name": "ofwa-management",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "node --import tsx --test tests/**/*.test.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "5.17.0",
+    "@supabase/ssr": "0.5.2",
+    "@supabase/supabase-js": "2.56.1",
+    "next": "14.2.12",
+    "nodemailer": "6.9.14",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.1",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "prisma": "5.17.0",
+    "tsx": "4.19.1",
+    "typescript": "5.6.3"
+  }
+}
