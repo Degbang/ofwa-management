@@ -1,5 +1,6 @@
 import { ReportStatus, Role } from "@prisma/client";
 import { createDamageReportAction, updateDamageReportAction } from "@/lib/actions";
+import { MAX_UPLOAD_SIZE_BYTES, formatUploadSizeLimit } from "@/lib/constants";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { canAccessPage } from "@/lib/permissions";
@@ -27,6 +28,7 @@ function reportsHref(page: number) {
 }
 
 export default async function ReportsPage({ searchParams }: ReportsPageProps) {
+  const uploadLimitLabel = formatUploadSizeLimit(MAX_UPLOAD_SIZE_BYTES);
   const session = await requirePageRoles([Role.BRIAN, Role.EDMOND, Role.DICKSON]);
   const isBrian = canAccessPage(session.user.email, session.user.roles, [Role.BRIAN]);
   const page = parsePage(searchParams?.page);
@@ -126,6 +128,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             </label>
             <label>
               Photo upload
+              <span className="muted">Max {uploadLimitLabel}</span>
               <input accept=".pdf,.jpg,.jpeg,.png,.docx" name="photo" type="file" />
             </label>
             <button className="button button-primary" type="submit">

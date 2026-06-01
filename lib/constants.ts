@@ -29,6 +29,14 @@ export const ALLOWED_UPLOAD_TYPES = [
 export const ALLOWED_UPLOAD_EXTENSIONS = [".pdf", ".jpg", ".jpeg", ".png", ".docx"];
 export const MAX_UPLOAD_SIZE_BYTES = Number(process.env.MAX_UPLOAD_SIZE_BYTES ?? 10 * 1024);
 
+export function formatUploadSizeLimit(bytes: number) {
+  if (bytes >= 1024 * 1024) {
+    return `${Math.round((bytes / (1024 * 1024)) * 10) / 10} MB`;
+  }
+
+  return `${Math.round(bytes / 1024)} KB`;
+}
+
 export const PAYABLE_REQUEST_TYPES = new Set<RequestType>([
   RequestType.CASH_DISBURSEMENT,
   RequestType.HUB_FUND

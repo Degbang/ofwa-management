@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Prisma, ReturnStatus, Role } from "@prisma/client";
 import { StatusBadge } from "@/components/status-badge";
 import { createRentalAction, markRentalReturnedAction } from "@/lib/actions";
+import { MAX_UPLOAD_SIZE_BYTES, formatUploadSizeLimit } from "@/lib/constants";
 import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { canAccessPage } from "@/lib/permissions";
@@ -57,6 +58,7 @@ function statusTone(isOverdue: boolean, status: ReturnStatus) {
 }
 
 export default async function RentalsPage({ searchParams }: RentalsPageProps) {
+  const uploadLimitLabel = formatUploadSizeLimit(MAX_UPLOAD_SIZE_BYTES);
   const session = await requirePageRoles([Role.BRIAN, Role.EDMOND]);
   const canManageRentals = canAccessPage(session.user.email, session.user.roles, [Role.EDMOND]);
   const isBrianViewer = canAccessPage(session.user.email, session.user.roles, [Role.BRIAN]);
@@ -224,6 +226,7 @@ export default async function RentalsPage({ searchParams }: RentalsPageProps) {
               </div>
               <label>
                 Agreement / ID upload
+                <span className="muted">Max {uploadLimitLabel}</span>
                 <input accept=".pdf,.jpg,.jpeg,.png,.docx" name="agreement" type="file" />
               </label>
               <label>

@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { RequestType } from "@prisma/client";
-import { HUB_OPTIONS, REQUEST_TYPE_LABELS } from "@/lib/constants";
+import { HUB_OPTIONS, MAX_UPLOAD_SIZE_BYTES, REQUEST_TYPE_LABELS, formatUploadSizeLimit } from "@/lib/constants";
+
+const uploadLimitLabel = formatUploadSizeLimit(MAX_UPLOAD_SIZE_BYTES);
 
 export function RequestTypeSelector({
   renderHubFundLink = true
@@ -70,6 +72,7 @@ export function CashDisbursementFields() {
         </label>
         <label>
           Attachment
+          <span className="muted">Max {uploadLimitLabel}</span>
           <input accept=".pdf,.jpg,.jpeg,.png,.docx" name="attachment" type="file" />
         </label>
         <label className="field-span-2">
@@ -167,6 +170,7 @@ export function HubFundFields() {
         </label>
         <label>
           Attachment
+          <span className="muted">Max {uploadLimitLabel}</span>
           <input accept=".pdf,.jpg,.jpeg,.png,.docx" name="attachment" type="file" />
         </label>
         <label className="field-span-2">
@@ -218,6 +222,7 @@ export function ReimbursementFields() {
         </label>
         <label>
           Receipt upload
+          <span className="muted">Max {uploadLimitLabel}</span>
           <input accept=".pdf,.jpg,.jpeg,.png,.docx" name="attachment" required type="file" />
         </label>
         <label className="field-span-2">
@@ -257,6 +262,7 @@ export function LeaveFields() {
         </label>
         <label>
           Attachment
+          <span className="muted">Max {uploadLimitLabel}</span>
           <input accept=".pdf,.jpg,.jpeg,.png,.docx" name="attachment" type="file" />
         </label>
         <label className="field-span-3">
