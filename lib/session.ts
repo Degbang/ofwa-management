@@ -8,8 +8,6 @@ import { DEV_IMPERSONATION_COOKIE, canUseDevImpersonation } from "@/lib/dev-impe
 import { logPerf, startPerfTimer } from "@/lib/perf";
 import { canAccessPage, hasRole } from "@/lib/permissions";
 
-const canUseCachedDevImpersonation = canUseDevImpersonation();
-
 const getAuthenticatedAppUser = cache(async () => {
   const perfTimer = startPerfTimer();
   const cookieStore = await cookies();
@@ -48,7 +46,7 @@ const getResolvedSessionUsers = cache(async () => {
     return null;
   }
 
-  if (!canUseDevImpersonation()) {
+  if (!canUseDevImpersonation(signedInUser.email)) {
     logPerf("session.getResolvedSessionUsers", perfTimer, {
       user: signedInUser.email,
       impersonating: false
@@ -125,7 +123,7 @@ export const requireSession = cache(async () => {
     redirect("/login?error=session_expired");
   }
 
-  const impersonationOptions = canUseCachedDevImpersonation ? await listApprovedAppUsers() : [];
+  const impersonationOptions = canUseDevImpersonation(session.signedInUser.email) ? await listApprovedAppUsers() : [];
   logPerf("session.requireSession", perfTimer, {
     user: session.user.email,
     impersonating: session.isImpersonating,

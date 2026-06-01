@@ -1,6 +1,12 @@
 import { PrismaClient, Role } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.PRISMA_SEED_DATABASE_URL ?? process.env.DATABASE_URL ?? process.env.DIRECT_URL
+    }
+  }
+});
 
 function uniqueEmails(value?: string) {
   return (value ?? "")

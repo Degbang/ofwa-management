@@ -7,12 +7,12 @@ import { DEV_IMPERSONATION_COOKIE, canUseDevImpersonation } from "@/lib/dev-impe
 import { requireSession } from "@/lib/session";
 
 export async function setDevImpersonationAction(formData: FormData) {
-  await requireSession();
+  const session = await requireSession();
 
   const next = String(formData.get("next") ?? "/dashboard");
   const safeNext = next.startsWith("/") ? next : "/dashboard";
 
-  if (!canUseDevImpersonation()) {
+  if (!canUseDevImpersonation(session.signedInUser.email)) {
     redirect(safeNext);
   }
 
