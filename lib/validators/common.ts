@@ -1,6 +1,6 @@
 import path from "node:path";
 import { z } from "zod";
-import { ALLOWED_UPLOAD_EXTENSIONS, ALLOWED_UPLOAD_TYPES } from "@/lib/constants";
+import { ALLOWED_UPLOAD_EXTENSIONS, ALLOWED_UPLOAD_TYPES, MAX_UPLOAD_SIZE_BYTES } from "@/lib/constants";
 
 export const moneySchema = z
   .string()
@@ -28,5 +28,10 @@ export function validateUpload(file: File, isRequired: boolean) {
   const extension = path.extname(file.name).toLowerCase();
   if (!ALLOWED_UPLOAD_TYPES.includes(file.type) || !ALLOWED_UPLOAD_EXTENSIONS.includes(extension)) {
     throw new Error("Only PDF, JPG, PNG, and DOCX files are allowed.");
+  }
+
+  if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+    const limitInKb = Math.round(MAX_UPLOAD_SIZE_BYTES / 1024);
+    throw new Error(`File is too large. Maximum allowed size is ${limitInKb} KB.`);
   }
 }

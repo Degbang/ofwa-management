@@ -27,6 +27,7 @@ export const ALLOWED_UPLOAD_TYPES = [
 ];
 
 export const ALLOWED_UPLOAD_EXTENSIONS = [".pdf", ".jpg", ".jpeg", ".png", ".docx"];
+export const MAX_UPLOAD_SIZE_BYTES = Number(process.env.MAX_UPLOAD_SIZE_BYTES ?? 10 * 1024);
 
 export const PAYABLE_REQUEST_TYPES = new Set<RequestType>([
   RequestType.CASH_DISBURSEMENT,
