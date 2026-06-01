@@ -49,6 +49,8 @@ function requestsHref(params: RequestsPageProps["searchParams"], key: "minePage"
 export default async function RequestsPage({ searchParams }: RequestsPageProps) {
   const session = await requireSession();
   const isBrian = hasRole(session.user.roles, [Role.BRIAN]);
+  const isDickson = hasRole(session.user.roles, [Role.DICKSON]);
+  const isJael = hasRole(session.user.roles, [Role.JAEL]);
   const isDeveloperViewer = isDeveloperViewerEmail(session.user.email);
   const minePage = parsePage(searchParams?.minePage);
   const actionsPage = parsePage(searchParams?.actionsPage);
@@ -76,6 +78,45 @@ export default async function RequestsPage({ searchParams }: RequestsPageProps) 
           {
             currentApproverId: session.user.id
           },
+          ...(isBrian
+            ? [
+                {
+                  currentApprover: {
+                    roleAssignments: {
+                      some: {
+                        role: Role.BRIAN
+                      }
+                    }
+                  }
+                }
+              ]
+            : []),
+          ...(isDickson
+            ? [
+                {
+                  currentApprover: {
+                    roleAssignments: {
+                      some: {
+                        role: Role.DICKSON
+                      }
+                    }
+                  }
+                }
+              ]
+            : []),
+          ...(isJael
+            ? [
+                {
+                  currentApprover: {
+                    roleAssignments: {
+                      some: {
+                        role: Role.JAEL
+                      }
+                    }
+                  }
+                }
+              ]
+            : []),
           ...(isBrian
             ? [
                 {

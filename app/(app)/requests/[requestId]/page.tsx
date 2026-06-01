@@ -52,6 +52,9 @@ function canViewRequestWithEmail(
   request: {
     requesterId: string | null;
     currentApproverId: string | null;
+    currentApprover?: {
+      roleAssignments: Array<{ role: Role }>;
+    } | null;
     type: RequestType;
     status: RequestStatus;
     paymentStatus: PaymentStatus;
@@ -66,6 +69,10 @@ function canViewRequestWithEmail(
   }
 
   if (request.currentApproverId === userId) {
+    return true;
+  }
+
+  if (request.currentApprover?.roleAssignments.some((assignment) => roles.includes(assignment.role))) {
     return true;
   }
 
@@ -88,7 +95,11 @@ export default async function RequestDetailPage({ params }: { params: { requestI
     },
     include: {
       requester: true,
-      currentApprover: true,
+      currentApprover: {
+        include: {
+          roleAssignments: true
+        }
+      },
       approvals: {
         include: {
           actor: true
@@ -128,7 +139,10 @@ export default async function RequestDetailPage({ params }: { params: { requestI
           .replace(/^./, (letter) => letter.toUpperCase()),
       value: formatRequestFieldValue(value)
     }));
-  const isCurrentApprover = request.currentApproverId === session.user.id;
+  const isCurrentApprover =
+    request.currentApproverId === session.user.id ||
+    request.currentApprover?.roleAssignments.some((assignment) => session.user.roles.includes(assignment.role)) ||
+    false;
   const canMarkPaid =
     session.user.roles.includes(Role.BRIAN) &&
     request.paymentStatus === PaymentStatus.PENDING &&

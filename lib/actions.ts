@@ -387,7 +387,11 @@ export async function reviewRequestAction(formData: FormData) {
     where: { id: requestId },
     include: {
       requester: true,
-      currentApprover: true
+      currentApprover: {
+        include: {
+          roleAssignments: true
+        }
+      }
     }
   });
 
@@ -446,7 +450,12 @@ export async function reviewRequestAction(formData: FormData) {
     return;
   }
 
-  if (request.currentApproverId !== session.user.id) {
+  const isAssignedReviewer =
+    request.currentApproverId === session.user.id ||
+    request.currentApprover?.roleAssignments.some((assignment) => session.user.roles.includes(assignment.role)) ||
+    false;
+
+  if (!isAssignedReviewer) {
     throw new Error("This request is not awaiting your action.");
   }
 
