@@ -1,10 +1,9 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { AttachmentEntityType } from "@prisma/client";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { validateUpload } from "@/lib/validators/common";
 
-const STORAGE_ROOT = path.join(process.cwd(), "storage", "private");
+const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET ?? "attachments";
 
 function sanitizeFilename(filename: string) {
   return filename.replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -22,14 +21,19 @@ export async function saveUploadedFile(
     return null;
   }
 
-  const folder = path.join(STORAGE_ROOT, entityType.toLowerCase(), entityId);
-  await mkdir(folder, { recursive: true });
-
   const storedName = `${randomUUID()}-${sanitizeFilename(file.name)}`;
-  const storagePath = path.join(folder, storedName);
+  const storagePath = `${entityType.toLowerCase()}/${entityId}/${storedName}`;
   const buffer = Buffer.from(await file.arrayBuffer());
+  const supabase = createAdminClient();
 
-  await writeFile(storagePath, buffer);
+  const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(storagePath, buffer, {
+    contentType: file.type,
+    upsert: false
+  });
+
+  if (error) {
+    throw new Error(`Failed to upload attachment: ${error.message}`);
+  }
 
   return {
     originalName: file.name,
@@ -41,5 +45,12 @@ export async function saveUploadedFile(
 }
 
 export async function readStoredFile(storagePath: string) {
-  return readFile(storagePath);
+  const supabase = createAdminClient();
+  const { data, error } = await supabase.storage.from(STORAGE_BUCKET).download(storagePath);
+
+  if (error || !data) {
+    throw new Error(`Failed to read attachment: ${error?.message ?? "Attachment not found."}`);
+  }
+
+  return Buffer.from(await data.arrayBuffer());
 }

@@ -142,6 +142,11 @@ export async function getApprovedAppUserByEmail(email: string) {
 
   const configuredUser = getConfiguredAppUserByEmail(normalizedEmail);
   if (configuredUser) {
+    const ensuredUser = await ensureConfiguredAppUserByEmail(normalizedEmail);
+    if (ensuredUser) {
+      return ensuredUser;
+    }
+
     return {
       id: `configured:${configuredUser.email}`,
       email: configuredUser.email,
