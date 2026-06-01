@@ -4,6 +4,7 @@ import { ROLE_LABELS } from "@/lib/constants";
 import { setDevImpersonationAction } from "@/lib/dev-actions";
 import { SessionExpiryWatcher } from "@/components/session-expiry-watcher";
 import {
+  canAccessEdmondHubRequestsModule,
   canAccessInventoryModule,
   canAccessReportsModule,
   canAccessRentalsModule,
@@ -52,7 +53,8 @@ export function AppShell({ children, impersonationOptions, isImpersonating, sess
     canAccessInventoryModule(user.email, user.roles) ? { href: "/inventory", label: "Inventory", icon: "inventory_2" } : null,
     canAccessVendorsModule(user.email, user.roles) ? { href: "/vendors", label: "Vendors", icon: "handshake" } : null,
     canAccessReportsModule(user.email, user.roles) ? { href: "/reports", label: "Damage Reports", icon: "report_problem" } : null,
-    canAccessRentalsModule(user.email, user.roles) ? { href: "/rentals", label: "Rentals", icon: "key" } : null
+    canAccessRentalsModule(user.email, user.roles) ? { href: "/rentals", label: "Rentals", icon: "key" } : null,
+    canAccessEdmondHubRequestsModule(user.roles) ? { href: "/hub-requests", label: "Hub Events", icon: "photo_camera" } : null
   ].filter(Boolean) as Array<{ href: string; label: string; icon: string }>;
 
   return (

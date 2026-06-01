@@ -37,6 +37,10 @@ export function canAccessRentalsModule(email: string, userRoles: Role[]) {
   return canAccessPage(email, userRoles, [Role.BRIAN, Role.EDMOND]);
 }
 
+export function canAccessEdmondHubRequestsModule(userRoles: Role[]) {
+  return hasRole(userRoles, [Role.EDMOND]);
+}
+
 export function canAccessVendorsModule(email: string, userRoles: Role[]) {
   return canAccessPage(email, userRoles, [Role.BRIAN]);
 }
